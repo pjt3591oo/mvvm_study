@@ -37,37 +37,44 @@ class BooksModel(list):
     for data in self.data:
       self.model.appendRow(QStandardItem(data['name']))
 
+class BookViewModel:
 
-class BookViewModel(QMainWindow, ui_form) :
-  def __init__(self):
-    super().__init__()
-    print(ui_form, self)
-    self.setupUi(self)
-
-    self.booksModel = BooksModel()
+  def __init__(self, view, model):
+    self.view = view
+    self.model = model
     self.dataInit()
 
-    self.books.clicked.connect(self.confirm)
+    self.view.clicked.connect(self.confirm)
 
   def dataInit(self):
-    self.books.setModel(self.booksModel.model)
+    self.view.setModel(self.model.model)
 
   def confirm(self):
-    data = self.books.selectedIndexes()
+    data = self.view.selectedIndexes()
     idx = data[0].row()
 
     msg = '저자: %s, 제목: %s을 삭제하시겠습니까?'%(
-      self.booksModel.data[idx]['author'], 
-      self.booksModel.data[idx]['name']
+      self.model.data[idx]['author'], 
+      self.model.data[idx]['name']
     )
-    rst = QMessageBox.question(self,'', msg, QMessageBox.Yes | QMessageBox.No)
+
+    rst = QMessageBox.question(None,'', msg, QMessageBox.Yes | QMessageBox.No)
 
     if rst == QMessageBox.Yes:
-      self.booksModel.remove(idx)
+      self.model.remove(idx)
+
+
+class MainWindow(QMainWindow, ui_form) :
+  def __init__(self):
+    super().__init__()
+    self.setupUi(self)
+
+    self.booksModel = BooksModel()
+    self.bookViewModel = BookViewModel(self.books, self.booksModel)
 
 if __name__ == "__main__":
   app = QApplication(sys.argv) 
-  myWindow = BookViewModel() 
+  myWindow = MainWindow() 
   myWindow.setWindowTitle('Books')
   myWindow.show()
   app.exec_()
